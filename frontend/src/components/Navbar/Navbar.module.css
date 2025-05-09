@@ -1,0 +1,240 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 120px;
+  background-color: black;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 30px;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  color: red;
+}
+
+.logo:hover {
+  color: red;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+}
+
+.navLink {
+  margin-left: 20px;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: white;
+}
+
+.navLink:hover {
+  color: red;
+}
+
+.profileContainer {
+  position: relative;
+  margin-left: 20px;
+}
+
+.profileIcon {
+  background: none;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  padding: 5px;
+  color: white;
+}
+
+.profileIcon:hover {
+  color: red;
+}
+
+.profileMenu {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background-color: white;
+  color: black;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  min-width: 200px;
+  padding: 10px;
+  z-index: 100;
+}
+
+.accountDetails {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.userName {
+  font-weight: bold;
+  margin: 0 0 5px;
+}
+
+.userEmail {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.userAddress {
+  font-family: monospace;
+  font-size: 14px;
+  color: #333;
+  margin: 0;
+}
+
+.logoutButton {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  background: red;
+  border: none;
+  text-align: center;
+  cursor: pointer;
+  color: white;
+  border-radius: 4px;
+}
+
+.connectButtonContainer {
+  display: flex;
+  align-items: center;
+}
+
+.connectButtonContainer > button {
+  background-color: red !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+  transition: background-color 0.2s !important;
+}
+
+.connectButtonContainer > button:hover {
+  background-color: darkred !important;
+}
+
+.profileContainer {
+  position: relative;
+}
+
+
+
+.profileMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 240px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  z-index: 10;
+  color: #333;
+}
+
+.accountDetails {
+  margin-bottom: 0.5rem;
+}
+
+.userName {
+  font-weight: bold;
+  margin: 0 0 0.25rem;
+  color: #333;
+}
+
+.userAddress {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+}
+
+.reputationDetails {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background-color: #f5f7fa;
+  border-radius: 6px;
+}
+
+.reputationTitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.reputationStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.reputationItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.reputationLabel {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.reputationValue {
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.reputationLoading {
+  text-align: center;
+  padding: 0.5rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.reputationNotFound {
+  text-align: center;
+  padding: 0.5rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 0.75rem 0;
+}
+
+.logoutButton {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: red;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logoutButton:hover {
+  background-color: #e0e0e0;
+}

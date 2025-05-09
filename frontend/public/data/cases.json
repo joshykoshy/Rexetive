@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": "Missing Hiker in Redwood Trails",
+    "description": "On October 12th, 2022, Emma Brooks, a 27-year-old avid hiker, was reported missing in the Redwood National Park. Her car was found parked near a known trailhead, but there were no signs of struggle. Park rangers found her backpack at a lookout point with her phone inside, battery dead.",
+    "createdDate": "2025-03-15"
+  },
+  {
+    "id": 2,
+    "title": "Local Artist Homicide Case",
+    "description": "A local artist was found dead in her studio with no signs of forced entry. The artist had been working on a controversial art piece about societal issues. Several of her close friends and family reported that she had been receiving anonymous threats in the weeks leading up to her death. The studio was locked from the inside, and there were no signs of a struggle. The police are investigating, but no suspects have been identified.",
+    "createdDate": "2025-03-27"
+  },
+  {
+    "id": 3,
+    "title": "Midnight Museum Theft",
+    "description": "On the night of July 9th, 2021, three paintings worth $8 million were stolen from the City Art Museum. The security footage was mysteriously corrupted between 2:00 and 2:15 AM. No alarms were triggered. The museum’s security guard claims he saw nothing suspicious.",
+    "createdDate": "2025-03-17"
+  },
+  {
+    "id": 4,
+    "title": "The Park Bench Witness",
+    "description": "During a protest in downtown Seattle, a man known only as 'The Watcher' sat silently on a bench for 7 days straight, never speaking or moving much. On the 8th day, he vanished, and a cryptic note was left behind: 'The truth hides in the stillness.'",
+    "createdDate": "2025-03-18"
+  },
+  {
+    "id": 5,
+    "title": "Mysterious Transmission at 3:03",
+    "description": "Residents of the small town of Weston reported hearing a strange radio signal every night at 3:03 AM for two weeks. The sound resembled a Morse code sequence mixed with static. A local amateur radio enthusiast tried to trace the origin but disappeared the following night.",
+    "createdDate": "2025-03-19"
+  },
+  {
+    "id": 6,
+    "title": "Ghost in the Group Chat",
+    "description": "A college student named Jared sent an eerie voice message in a group chat late one night, saying 'They're in the walls.' His roommates say he was acting paranoid for days. Jared hasn’t been seen since, but the chat continues receiving messages from his account.",
+    "createdDate": "2025-03-20"
+  },
+  {
+    "id": 7,
+    "title": "Beacon Without Keepers",
+    "description": "Three lighthouse keepers stationed on the remote Isle of Skarn disappeared without a trace. Their last log entry read, 'The storm speaks.' No boat was reported leaving the island, and meals were set on the table, uneaten.",
+    "createdDate": "2025-03-21"
+  },
+  {
+    "id": 8,
+    "title": "7th Floor Panic",
+    "description": "Security cameras in a New York high-rise show a man panicking inside an elevator for 11 minutes. He presses all the buttons, screams at something off-camera, and then vanishes. The elevator never stopped or opened during that time.",
+    "createdDate": "2025-03-22"
+  },
+  {
+    "id": 9,
+    "title": "Portrait of Someone Who Wasn't",
+    "description": "An unsigned painting of a girl appeared in a local gallery with a note: 'She was never supposed to be remembered.' No one recognizes the subject. Forensic experts say the paint is over 100 years old, but the style and canvas are modern.",
+    "createdDate": "2025-03-23"
+  },
+  {
+    "id": 10,
+    "title": "Whispers from Wolf Creek",
+    "description": "A survivalist spent a week in an abandoned cabin deep in Wolf Creek. Upon returning, he claimed he heard voices each night whispering secrets about his past no one else knew. A search party found no signs of technology or people in the area.",
+    "createdDate": "2025-03-24"
+  }
+]
