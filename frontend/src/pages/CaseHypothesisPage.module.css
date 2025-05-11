@@ -1,0 +1,387 @@
+.caseDetailsPageContainer{
+    padding: 50px;
+    background-color: rgba(0, 0, 0, 0.797);
+}
+
+
+.caseDetails {
+    padding: 40px;
+    margin: 40px;
+}
+
+.backButton {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    color: black;
+}
+.backButton:hover {
+    color: black;
+}
+
+.caseContent {
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.caseTitle {
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.caseDescription {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.additionalInfo {
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.additionalInfo p {
+    margin: 8px 0;
+}
+
+.caseActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.actionButton {
+    padding: 10px 15px;
+    background-color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+}
+
+.error {
+    padding: 30px;
+    text-align: center;
+    color: #d32f2f;
+    background-color: #ffebee;
+    border-radius: 4px;
+    margin: 20px;
+}
+
+.submissionForm {
+    margin-top: 30px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.submissionForm h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #2d3748;
+}
+
+.formGroup {
+    margin-bottom: 16px;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.formGroup input,
+.formGroup textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.formGroup input:disabled {
+    background-color: #f7fafc;
+    cursor: not-allowed;
+}
+
+.formGroup textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.formGroup textarea:disabled{
+    background-color: #f7fafc;
+    cursor: not-allowed;
+}
+
+.submitButton {
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+    background-color: #2c5282;
+}
+
+.submitButton:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+}
+
+/* Evaluation Results */
+.evaluationResult {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+}
+
+.evaluationResult h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #2d3748;
+}
+
+.resultCard {
+    color: #4a5568;
+}
+
+.scoreGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.scoreItem {
+    background-color: #f7fafc;
+    padding: 16px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.scoreItem h3 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #718096;
+    margin-bottom: 6px;
+}
+
+.scoreValue {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.summarySection {
+    background-color: #f7fafc;
+    padding: 16px;
+    border-radius: 6px;
+    margin-bottom: 24px;
+}
+
+.summarySection h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #2d3748;
+}
+
+.statusSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.statusItem {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.statusItem span:first-child {
+    margin-right: 8px;
+    color: #718096;
+}
+
+.validTag,
+.invalidTag,
+.safeTag,
+.unsafeTag,
+.rankTag,
+.flagTag {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.validTag {
+    background-color: #c6f6d5;
+    color: #2f855a;
+}
+
+.invalidTag {
+    background-color: #fed7d7;
+    color: #c53030;
+}
+
+.safeTag {
+    background-color: #c6f6d5;
+    color: #2f855a;
+}
+
+.unsafeTag {
+    background-color: #fed7d7;
+    color: #c53030;
+}
+
+.rankTag {
+    background-color: #fefcbf;
+    color: #975a16;
+}
+
+.flagTag {
+    background-color: #fed7d7;
+    color: #c53030;
+}
+
+.blockchainSection {
+    background-color: #ebf8ff;
+    padding: 16px;
+    border-radius: 6px;
+}
+
+.blockchainSection h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #2b6cb0;
+}
+
+.blockchainInfo {
+    font-size: 14px;
+}
+
+.blockchainInfo p {
+    margin-bottom: 6px;
+}
+
+.txHash {
+    font-family: monospace;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Toast notification */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    color: white;
+    z-index: 1000;
+    animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+}
+
+.successToast {
+    background-color: #48bb78;
+}
+
+.errorToast {
+    background-color: #e53e3e;
+}
+
+/* Loading and error states */
+.loading,
+.error {
+    text-align: center;
+    padding: 40px;
+    color: #4a5568;
+}
+
+.error {
+    color: #e53e3e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .scoreGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .statusSection {
+        grid-template-columns: 1fr;
+    }
+
+    .additionalInfo {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .scoreGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}

@@ -1,0 +1,89 @@
+.caseDetailsPageContainer{
+    padding: 50px;
+    background-color: rgba(0, 0, 0, 0.797);
+}
+
+
+.caseDetails {
+    padding: 40px;
+    margin: 40px;
+}
+
+.backButton {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    color: black;
+}
+.backButton:hover {
+    color: black;
+}
+
+.caseContent {
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.caseTitle {
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.caseDescription {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.additionalInfo {
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.additionalInfo p {
+    margin: 8px 0;
+}
+
+.caseActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.actionButton {
+    padding: 10px 15px;
+    background-color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+}
+
+.error {
+    padding: 30px;
+    text-align: center;
+    color: #d32f2f;
+    background-color: #ffebee;
+    border-radius: 4px;
+    margin: 20px;
+}

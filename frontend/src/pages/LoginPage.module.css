@@ -1,0 +1,83 @@
+.loginPage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+.loginContainer {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.title {
+  text-align: center;
+  margin: 0 0 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.description {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.walletSection {
+  margin-top: 30px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #444;
+}
+
+.connectButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* Wallet button styling */
+.connectButtonContainer > button {
+  background-color: red !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 12px 20px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  width: auto !important;
+  min-width: 140px !important;
+}
+
+.connectButtonContainer > button:hover {
+  background-color: darkred !important;
+}
+
+.walletNote {
+  text-align: center;
+  font-size: 14px;
+  color: #777;
+  margin-top: 20px;
+}
+
+.walletLink {
+  color: red;
+  text-decoration: none;
+}
+
+.walletLink:hover {
+  text-decoration: underline;
+}

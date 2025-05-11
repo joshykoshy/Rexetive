@@ -1,0 +1,110 @@
+/* CaseAnalysisTools.module.css */
+
+.toolsContainer {
+    padding: 24px;
+    background-color: rgba(0, 0, 0, 0.797);
+}
+
+.sectionTitle {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    margin-top: 30px;
+    color: white;
+}
+
+.toolsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 32px;
+    grid-auto-rows: 1fr;
+}
+
+.toolCard {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 200px;
+}
+
+
+
+.toolCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.iconContainer {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.toolCard:nth-child(1) .iconContainer {
+    background-color: #cfddf5;
+}
+
+.toolCard:nth-child(2) .iconContainer {
+    background-color: #fee8e8;
+}
+
+.toolCard:nth-child(3) .iconContainer {
+    background-color: #e8feee;
+}
+
+.toolCard:nth-child(4) .iconContainer {
+    background-color: #f5e8fe;
+}
+
+
+.toolIcon {
+    width: 24px;
+    height: 24px;
+    color: #444;
+}
+
+.toolTitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #222;
+}
+
+.toolDescription {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    flex-grow: 1;
+}
+
+.actionButton {
+    background: none;
+    border: none;
+    color: #3366cc;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    text-align: left;
+}
+
+.actionButton:hover {
+    color: #1a4ba3;
+}
+
+.arrow {
+    margin-left: 4px;
+}
