@@ -1,0 +1,105 @@
+.SubmissionsSection {
+    padding: 30px;
+    margin-top: 20px;
+  }
+  
+  .sectionTitle {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .SubmissionsContainer {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px 0;
+    scrollbar-width: thin;
+    -ms-overflow-style: none;
+  }
+  
+  .SubmissionsContainer::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .SubmissionsContainer::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 6px;
+  }
+  
+  .caseCard {
+    min-width: 280px;
+    height: 150px;
+    margin-right: 20px;
+    padding: 15px;
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative;
+    text-decoration: none;
+  }
+  
+  .caseCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+    color: black;
+  }
+  
+  .caseCard h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 22px;
+  }
+  
+  .viewDetails {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    color: black;
+    font-size: 30px;
+  }
+  
+  .viewAllContainer {
+    min-width: 200px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+  }
+  
+  .viewAllButton {
+    padding: 10px 20px;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+  }
+  .viewAllButton:hover {
+    color: black;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .loading {
+    padding: 40px;
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+  }
+  
+  .error {
+    padding: 30px;
+    text-align: center;
+    color: #d32f2f;
+    background-color: #ffebee;
+    border-radius: 4px;
+    margin: 20px;
+  }
+  
+  
+  

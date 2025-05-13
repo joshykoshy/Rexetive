@@ -1,0 +1,208 @@
+.submissionDetailsPageContainer {
+    padding: 50px;
+    background-color: rgba(0, 0, 0, 0.797);
+}
+
+.submissionDetailsPage {
+    padding: 40px;
+    margin: 40px;
+}
+
+.backButton {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    color: black;
+}
+
+.backButton:hover {
+    color: #333;
+    background-color: #f5f5f5;
+}
+
+.submissionContent {
+    background-color: white;
+    color: black;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.submissionTitle {
+    font-size: 24px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.submissionInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.submissionMeta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.metaItem {
+    margin: 8px 0;
+}
+
+.metaItem strong {
+    color: #555;
+    font-weight: 600;
+}
+
+.rank {
+    font-weight: 600;
+    color: #2c6ecb;
+}
+
+.valid {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+.invalid {
+    color: #c62828;
+    font-weight: 600;
+}
+
+.flagItem {
+    grid-column: 1 / -1;
+    /* Span full width of the grid */
+    align-self: start;
+}
+
+.flag {
+    background-color: #ffecb3;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.scoreSection {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.scoreSection h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.scoreGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.scoreItem {
+    background-color: white;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.totalScore {
+    grid-column: 1 / -1;
+    background-color: #e8f5e9;
+}
+
+.scoreLabel {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.scoreValue {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.theorySection,
+.summarySection {
+    background-color: white;
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+.theorySection h3,
+.summarySection h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.theoryContent,
+.summaryContent {
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.submissionActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.actionButton {
+    padding: 10px 15px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    text-align: center;
+}
+
+.actionButton:hover {
+    background-color: #333;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    font-size: 18px;
+    color: white;
+}
+
+.error {
+    padding: 30px;
+    text-align: center;
+    color: #d32f2f;
+    background-color: #ffebee;
+    border-radius: 4px;
+    margin: 20px;
+}
+
+.notFound {
+    padding: 40px;
+    text-align: center;
+    font-size: 20px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    margin: 40px;
+}
