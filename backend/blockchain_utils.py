@@ -254,3 +254,28 @@ async def all_submissions():
             detail=f"Error retrieving submissions from blockchain: {str(e)}"
         )
 
+
+
+# Moved here unchanged from v1's user_auth.py, so auth no longer imports the Sui SDK.
+# chain.py calls this only when SUI_MOCK=0.
+async def update_user_reputation(wallet_address: str, points: int, nft_minted: bool):
+    try:
+        objects_result = handle_result(sui_client.get_objects(address=wallet_address))
+        reputation_object_id = None
+        for obj in objects_result.data:
+            if obj.object_type == f"{PACKAGE_ID}::{MODULE_NAME}::UserReputation":
+                reputation_object_id = obj.object_id
+                break
+        if not reputation_object_id:
+            print("No reputation object found for this wallet address.")
+            return None
+        tx = SyncTransaction(client=sui_client)
+        tx.move_call(
+            target=f"{PACKAGE_ID}::{MODULE_NAME}::update_reputation",
+            arguments=[ObjectID(reputation_object_id), SuiU64(points), bool(nft_minted)]
+        )
+        result = handle_result(tx.execute())
+        return bool(result and hasattr(result, 'effects') and result.effects.status.status == "success")
+    except Exception as e:
+        print(f"Error updating reputation on blockchain: {str(e)}")
+        return False

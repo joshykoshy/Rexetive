@@ -1,3 +1,9 @@
 .env
 __pycache__
 predictions.db
+# v2 runtime artefacts
+data/index/
+data/logs/*
+!data/logs/eval_report.md
+data/checkpoints.db*
+.pytest_cache/

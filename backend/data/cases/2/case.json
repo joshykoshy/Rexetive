@@ -1,0 +1,82 @@
+{
+  "id": 2,
+  "title": "The Quiet Readings at Halvard Station",
+  "summary": "Temperature records from the remote Halvard Island research station look unusually smooth for three nights in March, just before a funding review. The edits were made under the technician's account, but she says she was not on the island. Who changed the data, and why?",
+  "createdDate": "2026-09-20",
+  "key_facts": [
+    {
+      "id": "k1",
+      "evidence": "E2",
+      "keywords": [
+        "02:10|14 march",
+        "lund|blund"
+      ],
+      "text": "Edits were made at 02:10 on 14 March under Bea Lund's account"
+    },
+    {
+      "id": "k2",
+      "evidence": "E4",
+      "keywords": [
+        "manifest|boat|kestrel|hotel|left the island"
+      ],
+      "text": "The boat manifest shows Lund left the island on 13 March"
+    },
+    {
+      "id": "k3",
+      "evidence": "E5",
+      "keywords": [
+        "reset"
+      ],
+      "text": "Halden requested a password reset of Lund's account on 12 March"
+    },
+    {
+      "id": "k4",
+      "evidence": "E3",
+      "keywords": [
+        "satellite|storm|raw logger|memory card"
+      ],
+      "text": "Satellite data shows a storm spike that the station record no longer has"
+    },
+    {
+      "id": "k5",
+      "evidence": "E6",
+      "keywords": [
+        "funding|grant|renewal"
+      ],
+      "text": "Funding renewal depended on showing a stable instrument record"
+    },
+    {
+      "id": "k6",
+      "evidence": "E7",
+      "keywords": [
+        "password",
+        "halden|rune"
+      ],
+      "text": "Halden's claim that only he and Lund knew the password is contradicted by the reset"
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "evidence": "E4",
+      "pattern": "\\b(lund|bea)\\b[^.]{0,80}\\b(changed|edited|tampered|falsified|did it)\\b",
+      "explanation": "The boat manifest shows Lund was not on the island at 02:10 on 14 March."
+    },
+    {
+      "id": "t2",
+      "evidence": "E3",
+      "pattern": "\\b(sensor|instrument)\\b[^.]{0,40}\\b(malfunction|fault|broke)",
+      "explanation": "Satellite comparison shows the sensor was right; the stored file was edited."
+    }
+  ],
+  "solution_keywords": [
+    [
+      "halden",
+      "rune"
+    ],
+    [
+      "reset",
+      "password"
+    ]
+  ]
+}
