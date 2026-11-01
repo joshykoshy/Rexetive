@@ -1,0 +1,20 @@
+{"id": "g01", "case_id": 1, "question": "Whose badge opened the storeroom at 21:42?", "evidence": ["E2"]}
+{"id": "g02", "case_id": 1, "question": "Who asked for the alarm to be switched off during the gala?", "evidence": ["E3"]}
+{"id": "g03", "case_id": 1, "question": "Was the conservator's card cloned?", "evidence": ["E4"]}
+{"id": "g04", "case_id": 1, "question": "Where was Ilse Varga during the evening?", "evidence": ["E5"]}
+{"id": "g05", "case_id": 1, "question": "Who changed the insured value of the painting?", "evidence": ["E6"]}
+{"id": "g06", "case_id": 1, "question": "How tall was the person on the corridor camera?", "evidence": ["E7"]}
+{"id": "g07", "case_id": 1, "question": "When was the theft reported and was there forced entry?", "evidence": ["E1"]}
+{"id": "g08", "case_id": 2, "question": "Which account edited the temperature file and when?", "evidence": ["E2"]}
+{"id": "g09", "case_id": 2, "question": "Did the sensor really fail during the storm?", "evidence": ["E3"]}
+{"id": "g10", "case_id": 2, "question": "When did the technician leave the island?", "evidence": ["E4"]}
+{"id": "g11", "case_id": 2, "question": "Who requested a password reset for the technician?", "evidence": ["E5"]}
+{"id": "g12", "case_id": 2, "question": "What did the grant renewal depend on?", "evidence": ["E6"]}
+{"id": "g13", "case_id": 2, "question": "What did the station lead say about who knows the passwords?", "evidence": ["E7"]}
+{"id": "g14", "case_id": 3, "question": "When did the volunteer coordinator return the office key?", "evidence": ["E2"]}
+{"id": "g15", "case_id": 3, "question": "Who entered the office on Wednesday evening and what did they carry?", "evidence": ["E3"]}
+{"id": "g16", "case_id": 3, "question": "What was found in the shredder bin?", "evidence": ["E4"]}
+{"id": "g17", "case_id": 3, "question": "Which days were cash deposits skipped?", "evidence": ["E5"]}
+{"id": "g18", "case_id": 3, "question": "When was the audit announced?", "evidence": ["E6"]}
+{"id": "g19", "case_id": 3, "question": "What did the treasurer claim about his last office visit?", "evidence": ["E7"]}
+{"id": "g20", "case_id": 3, "question": "How large was the cash shortfall?", "evidence": ["E1", "E5"]}

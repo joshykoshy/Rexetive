@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReviewBanner from '../components/ReviewBanner';
 import { useParams, Link } from 'react-router-dom';
 import styles from './CaseHypothesisPage.module.css';
 import api from '../utils/api';
@@ -180,6 +181,7 @@ const CaseHypothesisPage = () => {
 
             {submissionResult && (
                 <div className={styles.evaluationResult}>
+                    <ReviewBanner result={submissionResult} />
                     <h2>Hypothesis Evaluation Results</h2>
                     <div className={styles.resultCard}>
                         <div className={styles.plausibilitySection}>

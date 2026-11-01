@@ -1,17 +1,17 @@
 import axios from 'axios';
 
-// Create axios instance with base URL
+// v2: the backend issues a JWT after verifying a wallet signature (or the labelled demo login).
+// v1 sent an X-Wallet-Address header that the server simply trusted.
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
-  timeout: 40000,
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8001',
+  timeout: 120000, // the review panel runs several model calls
 });
 
-// Add request interceptor to include wallet address in header
 api.interceptors.request.use(
   (config) => {
-    const walletAddress = localStorage.getItem('wallet_address');
-    if (walletAddress) {
-      config.headers['X-Wallet-Address'] = walletAddress;
+    const token = localStorage.getItem('rex_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },

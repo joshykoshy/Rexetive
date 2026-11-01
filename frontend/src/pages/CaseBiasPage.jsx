@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReviewBanner from '../components/ReviewBanner';
 import { useParams, Link } from 'react-router-dom';
 import styles from './CaseBiasPage.module.css';
 import api from '../utils/api';
@@ -179,6 +180,7 @@ const CaseBiasPage = () => {
 
             {submissionResult && (
                 <div className={styles.evaluationResult}>
+                    <ReviewBanner result={submissionResult} />
                     <h2>Bias Analysis Results</h2>
                     <div className={styles.resultCard}>
                         <div className={styles.biasSection}>

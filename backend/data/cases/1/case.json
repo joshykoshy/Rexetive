@@ -1,0 +1,84 @@
+{
+  "id": 1,
+  "title": "The Lantern Street Gallery Theft",
+  "summary": "During the opening gala at the Lantern Street Gallery in the fictional harbour town of Marrowby, the painting 'Tide at Dusk' disappeared from the locked storeroom. The alarm was off for scheduled maintenance, a staff badge opened the storeroom, and the gallery's insurance was raised three weeks earlier. Who removed the painting, and how?",
+  "createdDate": "2026-09-14",
+  "key_facts": [
+    {
+      "id": "k1",
+      "evidence": "E2",
+      "keywords": [
+        "21:42",
+        "badge|credential|card"
+      ],
+      "text": "Varga's badge opened the storeroom at 21:42"
+    },
+    {
+      "id": "k2",
+      "evidence": "E5",
+      "keywords": [
+        "restaurant|receipt|dinner|harbour lamp"
+      ],
+      "text": "Varga was at a restaurant 21:20-22:10 (receipt, card payment)"
+    },
+    {
+      "id": "k3",
+      "evidence": "E3",
+      "keywords": [
+        "maintenance|alarm",
+        "pell"
+      ],
+      "text": "The alarm maintenance window was requested by Aron Pell"
+    },
+    {
+      "id": "k4",
+      "evidence": "E6",
+      "keywords": [
+        "insur"
+      ],
+      "text": "Pell raised the insured value three weeks before"
+    },
+    {
+      "id": "k5",
+      "evidence": "E4",
+      "keywords": [
+        "clon|duplicate|copied"
+      ],
+      "text": "The badge reader logged a cloned credential (duplicate serial)"
+    },
+    {
+      "id": "k6",
+      "evidence": "E7",
+      "keywords": [
+        "camera|cctv|footage",
+        "guard|corridor"
+      ],
+      "text": "Corridor camera shows nobody in the corridor 21:30-22:00, contradicting the guard"
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "evidence": "E5",
+      "pattern": "\\b(varga|ilse)\\b[^.]{0,80}\\b(stole|took|removed|is the thief|did it)\\b",
+      "explanation": "Varga's card payment at the restaurant places her elsewhere at 21:42."
+    },
+    {
+      "id": "t2",
+      "evidence": "E7",
+      "pattern": "\\bguard\\b[^.]{0,60}\\bsaw\\b[^.]{0,40}\\b(varga|ilse)\\b",
+      "explanation": "Relies on the guard's sighting, which the corridor camera contradicts."
+    }
+  ],
+  "solution_keywords": [
+    [
+      "pell",
+      "aron"
+    ],
+    [
+      "clon",
+      "duplicate",
+      "copied"
+    ]
+  ]
+}

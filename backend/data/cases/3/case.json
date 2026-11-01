@@ -1,0 +1,86 @@
+{
+  "id": 3,
+  "title": "The Missing Ledger at Copperfield Co-op",
+  "summary": "A community food co-op in the fictional town of Copperfield discovered a cash shortfall of 4,800 just after an audit was announced, and the handwritten cash ledger vanished from the office. Two volunteers had access. What happened to the ledger and the money?",
+  "createdDate": "2026-10-02",
+  "key_facts": [
+    {
+      "id": "k1",
+      "evidence": "E2",
+      "keywords": [
+        "18:05|18:30|key log|sign-out|signed out|sign out",
+        "petra|quill"
+      ],
+      "text": "Petra Quill signed the office key out at 18:05 and back at 18:30"
+    },
+    {
+      "id": "k2",
+      "evidence": "E3",
+      "keywords": [
+        "19:10|cctv|camera",
+        "marsh|lio"
+      ],
+      "text": "CCTV shows Lio Marsh entering with his own key at 19:10 on Wednesday"
+    },
+    {
+      "id": "k3",
+      "evidence": "E4",
+      "keywords": [
+        "shred"
+      ],
+      "text": "Ledger page fragments were found in the office shredder bin"
+    },
+    {
+      "id": "k4",
+      "evidence": "E5",
+      "keywords": [
+        "friday",
+        "deposit"
+      ],
+      "text": "Cash deposits were skipped on Fridays when Marsh counted the till"
+    },
+    {
+      "id": "k5",
+      "evidence": "E6",
+      "keywords": [
+        "audit",
+        "email|announced|wednesday"
+      ],
+      "text": "The audit was announced by email on Wednesday at 16:00"
+    },
+    {
+      "id": "k6",
+      "evidence": "E7",
+      "keywords": [
+        "monday",
+        "marsh|lio"
+      ],
+      "text": "Marsh's claim he had not been in the office since Monday is contradicted by CCTV"
+    }
+  ],
+  "traps": [
+    {
+      "id": "t1",
+      "evidence": "E2",
+      "pattern": "\\b(petra|quill)\\b[^.]{0,80}\\b(took|stole|shredded|destroyed|did it)\\b",
+      "explanation": "The key log and CCTV show Quill left before the ledger was last seen and before Marsh entered."
+    },
+    {
+      "id": "t2",
+      "evidence": "E4",
+      "pattern": "\\b(break-?in|burglar|outsider)\\b",
+      "explanation": "No forced entry; the shredder fragments point to someone inside."
+    }
+  ],
+  "solution_keywords": [
+    [
+      "marsh",
+      "lio"
+    ],
+    [
+      "shred",
+      "friday",
+      "deposit"
+    ]
+  ]
+}

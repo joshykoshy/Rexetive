@@ -1,0 +1,29 @@
+.page { max-width: 1150px; margin: 90px auto 40px; padding: 0 20px; color: #e8e8f0; }
+.title { font-size: 1.8rem; margin-bottom: 4px; }
+.subtle { color: #a8a8bd; font-size: 0.9rem; }
+.card { background: rgba(20, 20, 32, 0.88); border: 1px solid #34344a; border-radius: 10px; padding: 16px 18px; margin: 14px 0; }
+.row { display: flex; gap: 14px; flex-wrap: wrap; }
+.col { flex: 1 1 240px; min-width: 240px; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table th, .table td { border-bottom: 1px solid #34344a; padding: 6px 8px; text-align: left; vertical-align: top; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.accept { background: #1e5631; color: #c8f7d4; }
+.reject { background: #6b1d1d; color: #ffd2d2; }
+.review { background: #6b5310; color: #ffefc2; }
+.neutral { background: #33334a; color: #d6d6e6; }
+.button { background: #5b4bd6; color: white; border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+.button:disabled { opacity: 0.5; cursor: default; }
+.danger { background: #a12f2f; }
+.secondary { background: #3b3b52; }
+.input, .textarea { width: 100%; background: #12121c; color: #e8e8f0; border: 1px solid #3b3b52; border-radius: 8px; padding: 8px 10px; font-family: inherit; }
+.textarea { min-height: 70px; }
+.code { font-family: Consolas, monospace; background: #0d0d14; border: 1px solid #2c2c40; border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; font-size: 0.85rem; }
+.blocked { border-color: #c0392b; background: #2a1010; color: #ffb4b4; }
+.score { font-size: 1.6rem; font-weight: 700; }
+.bar { height: 8px; background: #2c2c40; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.barFill { height: 100%; background: #6f63e6; }
+.node { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; border-bottom: 1px dashed #2c2c40; font-size: 0.9rem; }
+.nodeName { font-family: Consolas, monospace; min-width: 190px; color: #b9b0ff; }
+.evidence { font-size: 0.85rem; color: #c9c9d8; white-space: pre-wrap; }
+.markdown { white-space: pre-wrap; font-family: Consolas, monospace; font-size: 0.8rem; line-height: 1.35; overflow-x: auto; }
+.demoBanner { background: #6b5310; color: #ffefc2; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; margin: 8px 0; }

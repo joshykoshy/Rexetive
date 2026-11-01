@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReviewBanner from '../components/ReviewBanner';
 import { useParams, Link } from 'react-router-dom';
 import styles from './CaseLogicPage.module.css';
 import api from '../utils/api';
@@ -181,6 +182,7 @@ const CaseLogicPage = () => {
 
             {submissionResult && (
                 <div className={styles.evaluationResult}>
+                    <ReviewBanner result={submissionResult} />
                     <h2>Logic Analysis Results</h2>
                     <div className={styles.resultCard}>
                         <div className={styles.inconsistenciesSection}>
