@@ -1,338 +1,271 @@
-import sqlite3
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
-from datetime import datetime
+"""Rexetive v2 API.
+
+    uvicorn main:app --port 8001          (docs at http://localhost:8001/docs)
+
+v1 endpoints keep their paths and response shapes (the React pages still call them), but
+now run the review agent instead of one gpt-4 prompt:
+  POST /submit_submission/{synopsis|logic|hypothesis|bias}, GET /get_submission/{id},
+  GET /get_all_submissions, GET /get_all_submissions/case/{caseId}, GET /me, GET /me/reputation
+New:
+  GET /auth/nonce, POST /auth/verify, POST /auth/demo-login (DEMO_MODE only)
+  GET /cases, GET /cases/{id}             cases + evidence packs
+  GET /review/{id}                        node-by-node trace, judges, gate decision
+  POST /review/{id}/resume                moderator decision (approve / reject / adjust)
+  GET /moderation/queue                   items paused for a moderator
+  POST /analytics/ask                     safe text-to-SQL (moderators)
+  GET /evals/latest, GET /review-graph, GET /health
+
+Auth: Bearer JWT from a verified wallet signature (auth.py). v1 trusted an
+X-Wallet-Address header, which anyone could forge.
+"""
+from __future__ import annotations
+
 import json
-from ai_utils import evaluate_submission
-from blockchain_utils import submit_to_chain, mint_nft, get_submission_from_chain, all_submissions
-from user_auth import add_auth_routes, get_current_user, User, update_user_reputation
+from typing import Literal
+
+import analytics
+import db
+from agent.graph import mermaid, resume_review, snapshot, start_review
+from agent.judges import JUDGES
+from agent.policy import rank
+from auth import current_user, demo_login, issue_nonce, login_with_signature, moderator
+from cases import load_cases, public_case
+from config import DEMO_MODE, LOG_DIR, SUI_MOCK
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from ragcore import llm
+
+app = FastAPI(title="Rexetive v2", version="2.0",
+              description="Evidence-grounded AI review with a code policy gate and human moderation.")
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+                   allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 
-# Test the backend with other addresses
-app = FastAPI()
-
-add_auth_routes(app)
-
-class SubmissionRequest(BaseModel):
+# --- request bodies ----------------------------------------------------------------------------------
+class SubmissionRequest(BaseModel):  # v1 shape
     caseId: int
-    case: str
-    theory: str
+    case: str = ""            # v1 sent the case text; v2 ignores it and uses the evidence pack
+    theory: str = Field(min_length=10, max_length=6000)
 
-class SubmissionResponse(BaseModel):
-    caseId: int
-    author: str
-    clarity: int
-    plausibility: int
-    consistency: int
-    relevance: int
-    is_safe: bool
-    flag: str
-    theory: str
-    summary: str
-    rank: str
-    is_valid: bool
-    submission_id: Optional[int] = None
-    blockchain_tx: Optional[Dict[str, Any]] = None
-    nft_minted: bool = False
-    timestamp: int = None
-    reputation_updated: bool = False
 
-class ViewSubmission(BaseModel):
-    caseId: int
-    author: str
-    clarity: int
-    plausibility: int
-    consistency: int
-    relevance: int
-    is_safe: bool
-    flag: str
-    theory: str
-    summary: str
-    rank: str
-    is_valid: bool
-    submission_id: Optional[int] = None
-    timestamp: int = None
+class VerifyIn(BaseModel):
+    address: str = Field(pattern=r"^0x[0-9a-fA-F]{64}$")
+    message: str
+    signature: str
 
-@app.post("/submit_submission/synopsis", response_model=SubmissionResponse)
-async def submit_submission(
-    request: SubmissionRequest, 
-    current_user: User = Depends(get_current_user)
-):
-    author = current_user.wallet_address
-    
-    evaluation = await evaluate_submission(case_text=request.case, user_text=request.theory, category="synopsis")
 
-    timestamp = int(datetime.now().timestamp())
-    blockchain_tx = None
-    nft_minted = False
-    reputation_updated = False
-    submission_id = None
+class ResumeIn(BaseModel):
+    decision: Literal["approve", "reject", "adjust"]
+    scores: dict[str, int] = {}
+    note: str = ""
 
-    if evaluation['is_valid']:
-        try:
-            print("Submitting to blockchain...")
-            blockchain_result = await run_in_threadpool(
-                submit_to_chain,
-                request.caseId,
-                author,
-                evaluation['clarity'],
-                evaluation['plausibility'],
-                evaluation['consistency'],
-                evaluation['relevance'],
-                evaluation['is_safe'],
-                evaluation['flag'],
-                request.theory,
-                evaluation['summary'],
-                evaluation['rank'],
-                timestamp
-            )
 
-            print("Submitted to blockchain")
-            print("Blockchain submission result:", blockchain_result)
+class AnalyticsIn(BaseModel):
+    question: str = ""
+    sql: str = ""
 
-            blockchain_tx = json.dumps(blockchain_result)
-            nft_minted = blockchain_result.get('nft_minted', False)
-            submission_id = blockchain_result.get('submission_id', None)
 
-            total_score = evaluation['clarity'] + evaluation['plausibility'] + evaluation['consistency'] + evaluation['relevance']
-            reputation_points = 0
-            
-            if total_score >= 30:
-                reputation_points = 10  
-            elif total_score >= 25:
-                reputation_points = 5   
-            elif total_score >= 20:
-                reputation_points = 2   
-            else:
-                reputation_points = 1 
-                
-            if nft_minted:
-                reputation_points += 5
-                
-            if reputation_points > 0:
-                reputation_updated = await update_user_reputation(
-                    author, 
-                    reputation_points, 
-                    nft_minted
-                )
-                
-        except Exception as e:
-            print("Blockchain submission failed:", e)
+# --- helpers -------------------------------------------------------------------------------------------
+def _v1_view(sub: dict, state: dict | None = None) -> dict:
+    """v1 ViewSubmission shape from v2 data. Mapping: clarity=synopsis judge,
+    consistency=logic, plausibility=hypothesis, relevance=bias (objectivity)."""
+    reviews = {r["judge"]: r for r in db.query("SELECT * FROM reviews WHERE submission_id=?", (sub["id"],))}
+    score = lambda j: int(reviews[j]["score"]) if j in reviews else 0  # noqa: E731
+    flags = [f["text"] for r in reviews.values() for f in json.loads(r["flags_json"] or "[]")]
+    total = sub.get("total_score") or 0
+    feedback = (state or {}).get("feedback") or (reviews.get("synopsis") or {}).get("rationale", "")
+    return {"caseId": sub["case_id"], "author": sub["author"], "clarity": score("synopsis"),
+            "consistency": score("logic"), "plausibility": score("hypothesis"), "relevance": score("bias"),
+            "is_safe": not (state or {}).get("guard", {}).get("toxicity"), "flag": "; ".join(flags)[:500],
+            "theory": sub["text"], "summary": feedback, "rank": rank(total), "is_valid": sub["status"] == "accepted",
+            "submission_id": sub["id"], "timestamp": sub["created_at"], "status": sub["status"], "total_score": total}
 
-    response = SubmissionResponse(
-        caseId=request.caseId,
-        author=author,
-        clarity=evaluation['clarity'],
-        plausibility=evaluation['plausibility'],
-        consistency=evaluation['consistency'],
-        relevance=evaluation['relevance'],
-        is_safe=evaluation['is_safe'],
-        flag=evaluation['flag'],
-        theory=request.theory,
-        summary=evaluation['summary'],
-        rank=evaluation['rank'],
-        is_valid=evaluation['is_valid'],
-        submission_id=submission_id,
-        blockchain_tx=json.loads(blockchain_tx) if blockchain_tx else None,
-        nft_minted=nft_minted,
-        timestamp=timestamp,
-        reputation_updated=reputation_updated
-    )
 
-    status_code = 200 if evaluation['is_valid'] else 220
+def _all_submissions(case_id: int | None = None) -> list[dict]:
+    sql = "SELECT s.*, u.wallet_address AS author FROM submissions s JOIN users u ON u.id = s.user_id"
+    args: tuple = ()
+    if case_id is not None:
+        sql += " WHERE s.case_id = ?"
+        args = (case_id,)
+    return [_v1_view(s) for s in db.query(sql + " ORDER BY s.id DESC", args)]
 
-    return JSONResponse(
-        content=response.dict(),
-        status_code=status_code
-    )
+
+def _review_payload(snap: dict) -> dict:
+    st = snap["state"]
+    return {"submission_id": snap["submission_id"], "thread_id": snap["thread_id"], "status": snap["status"],
+            "waiting_for": snap["next"], "events": st.get("events", []), "guard": st.get("guard"),
+            "duplicate": st.get("duplicate"), "evidence": st.get("evidence", []), "judges": st.get("judges", {}),
+            "aggregate": st.get("aggregate"), "decision": st.get("decision"), "moderation": st.get("moderation"),
+            "credential": st.get("credential"), "reputation": st.get("reputation"), "feedback": st.get("feedback"),
+            "memory": st.get("memory")}
+
+
+async def _submit(mode: str, req: SubmissionRequest, user: dict) -> dict:
+    if req.caseId not in load_cases():
+        raise HTTPException(404, f"unknown case {req.caseId}")
+    sid = db.create_submission(req.caseId, user["id"], mode, req.theory)
+    run = await run_in_threadpool(start_review, sid)
+    st = run["state"]
+    view = _v1_view(db.get_submission(sid), st)
+    judge = st["judges"].get({"synopsis": "synopsis", "logic": "logic", "hypothesis": "hypothesis", "bias": "bias"}[mode], {})
+    mode_fields = {
+        "synopsis": {},
+        "logic": {"inconsistencies": judge.get("inconsistencies", []), "missing_links": judge.get("missing_links", []),
+                  "timeline_validity": judge.get("score", 0), "conflict_summary": judge.get("rationale", ""),
+                  "correction_suggestions": st.get("feedback", "")},
+        "hypothesis": {"plausibility_assessment": judge.get("score", 0), "counterpoints": judge.get("counterpoints", []),
+                       "evidence_match": judge.get("evidence_match", ""),
+                       "suggest_further_investigation": st.get("feedback", "")},
+        "bias": {"detected_biases": judge.get("detected_biases", []), "objectivity_score": judge.get("score", 0),
+                 "challenge_points": judge.get("challenge_points", []), "bias_impact_summary": judge.get("rationale", "")},
+    }[mode]
+    cred = st.get("credential") or {}
+    return {**view, **mode_fields, "review_status": run["status"], "review": _review_payload(run),
+            "blockchain_tx": cred or None, "nft_minted": bool(cred), "reputation_updated": bool(st.get("reputation"))}
+
+
+# --- auth --------------------------------------------------------------------------------------------------
+@app.get("/auth/nonce")
+def auth_nonce(address: str) -> dict:
+    return {"message": issue_nonce(address)}
+
+
+@app.post("/auth/verify")
+def auth_verify(body: VerifyIn) -> dict:
+    return login_with_signature(body.address, body.message, body.signature)
+
+
+@app.post("/auth/demo-login")
+def auth_demo() -> dict:
+    return demo_login()
+
+
+@app.get("/health")
+def health() -> dict:
+    return {"ok": True, "model": llm.badge(), "offline": llm.is_offline(), "demo_mode": DEMO_MODE,
+            "chain": "MOCK CHAIN" if SUI_MOCK else "sui"}
+
+
+# --- cases -------------------------------------------------------------------------------------------------
+@app.get("/cases")
+def cases() -> list[dict]:
+    return [public_case(c) for c in load_cases().values()]
+
+
+@app.get("/cases/{case_id}")
+def case(case_id: int) -> dict:
+    if case_id not in load_cases():
+        raise HTTPException(404, "unknown case")
+    return public_case(load_cases()[case_id])
+
+
+# --- v1 endpoints (now agent-backed) ------------------------------------------------------------------------
+@app.post("/submit_submission/synopsis")
+async def submit_synopsis(req: SubmissionRequest, user: dict = Depends(current_user)):
+    return await _submit("synopsis", req, user)
+
 
 @app.post("/submit_submission/logic")
-async def submit_logic_submission(
-    request: SubmissionRequest, 
-    current_user: User = Depends(get_current_user)
-):
-    author = current_user.wallet_address
-    evaluation = await evaluate_submission(case_text=request.case, user_text=request.theory, category="logic")
-    
-    response = {
-        "author": author,
-        "inconsistencies": evaluation.get('inconsistencies', []),
-        "missing_links": evaluation.get('missing_links', []),
-        "timeline_validity": evaluation.get('timeline_validity', 0),
-        "conflict_summary": evaluation.get('conflict_summary', ""),
-        "correction_suggestions": evaluation.get('correction_suggestions', "")
-    }
-    return JSONResponse(
-        content=response,
-        status_code=200
-    )
+async def submit_logic(req: SubmissionRequest, user: dict = Depends(current_user)):
+    return await _submit("logic", req, user)
+
 
 @app.post("/submit_submission/hypothesis")
-async def submit_hypothesis_submission(
-    request: SubmissionRequest, 
-    current_user: User = Depends(get_current_user)
-):
-    author = current_user.wallet_address
-    evaluation = await evaluate_submission(case_text=request.case, user_text=request.theory, category="hypothesis")
-    
-    response = {
-        "author": author,
-        "plausibility_assessment": evaluation.get('plausibility_assessment', 0),
-        "counterpoints": evaluation.get('counterpoints', []),
-        "evidence_match": evaluation.get('evidence_match', ""),
-        "suggest_further_investigation": evaluation.get('suggest_further_investigation', "")
-    }
-    return JSONResponse(
-        content=response,
-        status_code=200
-    )
+async def submit_hypothesis(req: SubmissionRequest, user: dict = Depends(current_user)):
+    return await _submit("hypothesis", req, user)
+
+
 @app.post("/submit_submission/bias")
-async def submit_bias_submission(
-    request: SubmissionRequest, 
-    current_user: User = Depends(get_current_user)
-):
-    author = current_user.wallet_address
-    evaluation = await evaluate_submission(case_text=request.case, user_text=request.theory, category="bias")
-    
-    response = {
-        "author": author,
-        "detected_biases": evaluation.get('detected_biases', []),
-        "objectivity_score": evaluation.get('objectivity_score', 0),
-        "challenge_points": evaluation.get('challenge_points', []),
-        "bias_impact_summary": evaluation.get('bias_impact_summary', "")
-    }
-    return JSONResponse(
-        content=response,
-        status_code=200
-    )
+async def submit_bias(req: SubmissionRequest, user: dict = Depends(current_user)):
+    return await _submit("bias", req, user)
+
 
 @app.get("/get_submission/{submission_id}")
-async def get_submission(submission_id: int, current_user: User = Depends(get_current_user)):
-    submission_data = await get_submission_from_chain(submission_id)
-    print("Submission data:", submission_data)
-    if not submission_data:
-        raise HTTPException(status_code=404, detail="Submission not found")
+def get_submission(submission_id: int, user: dict = Depends(current_user)):
+    sub = db.get_submission(submission_id)
+    if not sub:
+        raise HTTPException(404, "Submission not found")
+    return _v1_view(sub, snapshot(submission_id)["state"])
 
-    total_score = int(submission_data['clarity']) + int(submission_data['plausibility']) + int(submission_data['consistency']) + int(submission_data['relevance'])
-
-    response = ViewSubmission(
-        caseId=int(submission_data['caseId']),
-        author=str(submission_data['author']),
-        clarity=int(submission_data['clarity']),
-        plausibility=int(submission_data['plausibility']),
-        consistency=int(submission_data['consistency']),
-        relevance=int(submission_data['relevance']),
-        is_safe=bool(submission_data['is_safe']),
-        flag=str(submission_data['flag']),
-        theory=str(submission_data['theory']),
-        summary=str(submission_data['summary']),
-        rank=str(submission_data['rank']),
-        is_valid= total_score >= 30 and bool(submission_data['is_safe']),
-        timestamp=int(submission_data['timestamp']),
-        submission_id=submission_id,
-    )
-    return JSONResponse(
-        content=response.dict(),
-    )
 
 @app.get("/get_all_submissions")
-async def get_all_submissions(current_user: User = Depends(get_current_user)):
-    submissions = await all_submissions()
-    if not submissions:
-        raise HTTPException(status_code=404, detail="No submissions found")
-    
-    results = []
-    for submission_data in submissions:
-        total_score = int(submission_data['clarity']) + int(submission_data['plausibility']) + int(submission_data['consistency']) + int(submission_data['relevance'])
+def get_all_submissions(user: dict = Depends(current_user)):
+    return _all_submissions()
 
-        response = ViewSubmission(
-            caseId=int(submission_data['caseId']),
-            author=str(submission_data['author']),
-            clarity=int(submission_data['clarity']),
-            plausibility=int(submission_data['plausibility']),
-            consistency=int(submission_data['consistency']),
-            relevance=int(submission_data['relevance']),
-            is_safe=bool(submission_data['is_safe']),
-            flag=str(submission_data['flag']),
-            theory=str(submission_data['theory']),
-            summary=str(submission_data['summary']),
-            rank=str(submission_data['rank']),
-            is_valid= total_score >= 30 and bool(submission_data['is_safe']),
-            timestamp=int(submission_data['timestamp']),
-            submission_id=submission_data['submission_id'],
-        )
-        results.append(response.dict())
-
-    return results
 
 @app.get("/get_all_submissions/case/{caseId}")
-async def get_all_submissions_by_case(caseId: int, current_user: User = Depends(get_current_user)):
-    submissions = await all_submissions()
-    if not submissions:
-        raise HTTPException(status_code=404, detail="No submissions found for this case")
-    
-    results = []
-    for submission_data in submissions:
-        if int(submission_data['caseId']) != caseId:
-            continue
-        total_score = int(submission_data['clarity']) + int(submission_data['plausibility']) + int(submission_data['consistency']) + int(submission_data['relevance'])
-        response = ViewSubmission(
-            caseId=int(submission_data['caseId']),
-            author=str(submission_data['author']),
-            clarity=int(submission_data['clarity']),
-            plausibility=int(submission_data['plausibility']),
-            consistency=int(submission_data['consistency']),
-            relevance=int(submission_data['relevance']),
-            is_safe=bool(submission_data['is_safe']),
-            flag=str(submission_data['flag']),
-            theory=str(submission_data['theory']),
-            summary=str(submission_data['summary']),
-            rank=str(submission_data['rank']),
-            is_valid= total_score >= 30 and bool(submission_data['is_safe']),
-            timestamp=int(submission_data['timestamp']),
-            submission_id=submission_data['submission_id'],
-        )
-        results.append(response.dict())
-
-    return results
-
-@app.get("/get_all_submissions/author/{author}")
-async def get_all_submissions_by_author(current_user: User = Depends(get_current_user)):
-    submissions = await all_submissions()
-    author = current_user.wallet_address
-    if not submissions:
-        raise HTTPException(status_code=404, detail="No submissions found for this author")
-    
-    results = []
-    for submission_data in submissions:
-        if submission_data['author'] != author:
-            continue
-        total_score = int(submission_data['clarity']) + int(submission_data['plausibility']) + int(submission_data['consistency']) + int(submission_data['relevance'])
-
-        response = ViewSubmission(
-            caseId=int(submission_data['caseId']),
-            author=str(submission_data['author']),
-            clarity=int(submission_data['clarity']),
-            plausibility=int(submission_data['plausibility']),
-            consistency=int(submission_data['consistency']),
-            relevance=int(submission_data['relevance']),
-            is_safe=bool(submission_data['is_safe']),
-            flag=str(submission_data['flag']),
-            theory=str(submission_data['theory']),
-            summary=str(submission_data['summary']),
-            rank=str(submission_data['rank']),
-            is_valid= total_score >= 30 and bool(submission_data['is_safe']),
-            timestamp=int(submission_data['timestamp']),
-            submission_id=submission_data['submission_id'],
-        )
-        results.append(response.dict())
-
-    return results
+def get_all_by_case(caseId: int, user: dict = Depends(current_user)):
+    return _all_submissions(caseId)
 
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+@app.get("/me")
+def me(user: dict = Depends(current_user)):
+    return user
+
+
+@app.get("/me/reputation")
+def me_reputation(user: dict = Depends(current_user)):
+    rows = db.query("SELECT * FROM reputation WHERE user_id=?", (user["id"],))
+    rep = rows[0] if rows else {"points": 0, "accepted": 0, "nft_count": 0}
+    return {"reputation_points": rep["points"], "nft_count": rep["nft_count"], "submissions_accepted": rep["accepted"],
+            "wallet": user["wallet_address"], "role": user["role"]}
+
+
+# --- v2: review trace, moderation, analytics, evals ----------------------------------------------------------
+@app.get("/review/{submission_id}")
+def review(submission_id: int, user: dict = Depends(current_user)):
+    snap = snapshot(submission_id)
+    if not snap["state"]:
+        raise HTTPException(404, "no review for this submission")
+    return _review_payload(snap) | {"text": snap["state"].get("masked_text")}
+
+
+@app.post("/review/{submission_id}/resume")
+async def review_resume(submission_id: int, body: ResumeIn, mod: dict = Depends(moderator)):
+    unknown = set(body.scores) - set(JUDGES)
+    if unknown:
+        raise HTTPException(422, f"unknown judges: {sorted(unknown)}")
+    try:
+        snap = await run_in_threadpool(resume_review, submission_id, body.decision, body.scores, body.note,
+                                       mod["display_name"] or mod["wallet_address"])
+    except ValueError as err:
+        raise HTTPException(409, str(err)) from err
+    return _review_payload(snap)
+
+
+@app.get("/moderation/queue")
+def moderation_queue(mod: dict = Depends(moderator)):
+    rows = db.query("SELECT s.id, s.case_id, s.mode, s.text, s.total_score, s.disagreement, s.duplicate_of, s.created_at, "
+                    "u.display_name FROM submissions s JOIN users u ON u.id = s.user_id "
+                    "WHERE s.status = 'needs_review' ORDER BY s.id DESC")
+    out = []
+    for r in rows:
+        snap = snapshot(r["id"])
+        st = snap["state"]
+        out.append({**r, "resumable": "moderator_review" in snap["next"],
+                    "reasons": (st.get("decision") or {}).get("reasons", ["seeded example (no live review thread)"]),
+                    "scores": (st.get("aggregate") or {}).get("scores")})
+    return out
+
+
+@app.post("/analytics/ask")
+async def analytics_ask(body: AnalyticsIn, mod: dict = Depends(moderator)):
+    if not (body.question or body.sql):
+        raise HTTPException(422, "ask a question or provide SQL")
+    return await run_in_threadpool(analytics.ask, body.question, body.sql)
+
+
+@app.get("/evals/latest")
+def evals_latest():
+    report, results = LOG_DIR / "eval_report.md", LOG_DIR / "eval_results.json"
+    if not report.exists():
+        raise HTTPException(404, "no eval report yet: run python -m evals.run_all")
+    data = json.loads(results.read_text(encoding="utf-8")) if results.exists() else {}
+    return {"markdown": report.read_text(encoding="utf-8"), "results": data}
+
+
+@app.get("/review-graph")
+def review_graph():
+    return {"mermaid": mermaid()}

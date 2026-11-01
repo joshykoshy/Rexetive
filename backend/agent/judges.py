@@ -78,8 +78,16 @@ def facts_covered(case: dict, low: str) -> list[dict]:
             if all(any(_has(low, alt) for alt in item.split("|")) for item in f["keywords"])]
 
 
+REFUTATION_RE = re.compile(r"\b(conflicts?|contradict\w*|inconsistent|disagrees?|disproves?|rules? out|excludes?|"
+                           r"not (true|her|him|them)|cannot have|couldn't have|could not have|clears?)\b")
+
+
 def traps_hit(case: dict, low: str) -> list[dict]:
-    return [t for t in case["traps"] if re.search(t["pattern"], low)]
+    """A trap is hit when a sentence makes the contradicted claim, not when it refutes it
+    ("the guard's sighting conflicts with the camera" points out the trap; it isn't one)."""
+    sentences = re.split(r"(?<=[.!?])\s+", low)
+    return [t for t in case["traps"]
+            if any(re.search(t["pattern"], s) and not REFUTATION_RE.search(s) for s in sentences)]
 
 
 def solution_match(case: dict, low: str) -> float:

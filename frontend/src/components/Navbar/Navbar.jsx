@@ -4,6 +4,7 @@ import styles from './Navbar.module.css';
 import { AvatarIcon } from '@radix-ui/react-icons';
 import { useCurrentAccount, ConnectButton } from '@mysten/dapp-kit';
 import api from '../../utils/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Navbar = ({ onLogout }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -11,8 +12,8 @@ const Navbar = ({ onLogout }) => {
   const [isLoading, setIsLoading] = useState(false);
   const profileRef = useRef(null);
   const navigate = useNavigate();
-  const currentAccount = useCurrentAccount();
-  const isAuthenticated = !!currentAccount;
+  const { user, isAuthenticated, isModerator } = useAuth();
+  const currentAccount = user ? { address: user.wallet_address } : null;
 
   const toggleProfileMenu = () => {
     setShowProfileMenu((prev) => !prev);
@@ -81,6 +82,10 @@ const Navbar = ({ onLogout }) => {
       <div className={styles.navLinks}>
         <Link to="/view-submissions" className={styles.navLink}>View Submissions</Link>
         <Link to={`/my-submissions/${currentAccount?.address}`} className={styles.navLink}>My Submissions</Link>
+        {isModerator && <Link to="/moderation" className={styles.navLink}>Moderation</Link>}
+        {isModerator && <Link to="/analytics" className={styles.navLink}>Analytics</Link>}
+        <Link to="/evals" className={styles.navLink}>Evals</Link>
+        {user?.demo && <span className={styles.navLink} style={{ color: '#ffd76a' }}>DEMO MODE</span>}
         <div className={styles.profileContainer} ref={profileRef}>
           {isAuthenticated ? (
             <>

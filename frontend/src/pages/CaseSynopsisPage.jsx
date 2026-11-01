@@ -1,5 +1,6 @@
 // CaseSynopsisPage.jsx
 import React, { useState, useEffect } from 'react';
+import ReviewBanner from '../components/ReviewBanner';
 import { useParams, Link } from 'react-router-dom';
 import styles from './CaseSynopsisPage.module.css';
 import api from '../utils/api';
@@ -80,9 +81,9 @@ const CaseSynopsisPage = () => {
             setSubmissionResult(result);
             
             if (result.is_valid) {
-                setToastMessage("NFT Minted Successfully!");
+                setToastMessage(result.nft_minted ? "Accepted: credential issued" : `Review status: ${result.review_status}`);
             } else {
-                setToastMessage("Evaluation Invalid");
+                setToastMessage(result.review_status === "needs_review" ? "Sent to a moderator" : "Not accepted: see feedback");
             }
             setShowToast(true);
             
@@ -183,6 +184,7 @@ const CaseSynopsisPage = () => {
 
             {submissionResult && (
                 <div className={styles.evaluationResult}>
+                    <ReviewBanner result={submissionResult} />
                     <h2>Evaluation Results</h2>
                     <div className={styles.resultCard}>
                         <div className={styles.scoreGrid}>

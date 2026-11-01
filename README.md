@@ -1,231 +1,158 @@
-﻿# Rexetive
+﻿# Rexetive v2: evidence-grounded AI review with human moderation
 
-> AI-verified knowledge sharing platform with tamper-proof Sui NFT minting.
+> A review platform for community analysis of open cases (investigations, research puzzles).
+> An AI panel evaluates each submission **against the case's evidence**, a deterministic
+> policy decides, a human moderator handles the grey zone, and accepted submissions earn a
+> verifiable credential (Sui NFT) plus reputation.
 
-🏆 **Finalist Project** at the **SuiHub Decentralized Autonomy Blockathon** (Sui Foundation, May 2025)
+🏆 v1 was a **finalist at the SuiHub Decentralized Autonomy Blockathon** (Sui Foundation, May 2025).
+v2 keeps the React + FastAPI + Move structure and the four analysis modes (synopsis, logic,
+hypothesis, bias), and rebuilds the review as an evidence-grounded, auditable workflow. The v1
+code is on the `main` branch, and [V1_TO_V2.md](V1_TO_V2.md) lists every fix with its file and test.
 
----
+## How a submission is reviewed
 
-## Overview
-
-**Rexetive** is a decentralized knowledge-sharing and investigative analysis platform designed to combat misinformation and reward high-quality insights. By combining OpenAI large language models with Sui Move smart contracts, Rexetive creates a tamper-proof pipeline where user theories, case breakdowns, and analytical hypotheses are independently evaluated for logic, plausibility, and bias. Submissions that meet strict quality thresholds are minted directly onto the Sui blockchain as non-fungible tokens (NFTs), creating a permanent, verifiable registry of community-contributed knowledge.
-
----
-
-## Key Features
-
-- **Multi-Perspective AI Evaluation**: Four specialized analysis modes powered by OpenAI GPT-4:
-  - **Synopsis Evaluation**: Quantitative scoring across Clarity, Plausibility, Consistency, and Relevance (0–10 each), plus safety checks and quality rankings (Gold, Silver, Bronze).
-  - **Logic & Timeline Analysis**: Automatic detection of chronological contradictions, logical fallacies, and narrative gaps.
-  - **Hypothesis Verification**: Plausibility assessment with generated counterpoints, evidence matching, and suggested investigation angles.
-  - **Bias & Fallacy Detection**: Identifies confirmation bias, emotional bias, and logical leaps with an objectivity rating.
-- **Quality-Gated NFT Minting**: Insights achieving a score of &ge; 30/40 and passing safety filters are automatically minted as immutable `ValidSubmission` NFTs transferred to the contributor's Sui wallet.
-- **On-Chain Reputation System**: Dynamic `UserReputation` objects deployed on Sui track accepted submissions, cumulative points, and total minted NFTs.
-- **Wallet-Native Authentication**: Passwordless authentication via Sui browser wallets using `@mysten/dapp-kit` with custom header-based session verification.
-- **Interactive Case Explorer**: Built-in repository of investigative case studies with real-time community submission feeds and detailed breakdowns.
-
----
-
-## Architecture
-
-Rexetive connects a React-based frontend, a high-performance FastAPI orchestration layer, OpenAI's reasoning models, and the Sui Move blockchain:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                   React 19 + Vite UI                    │
-│      (@mysten/dapp-kit Wallet Connect & Case Tools)     │
-└────────────────────────────┬────────────────────────────┘
-                             │ HTTP / JSON (Axios)
-                             ▼
-┌─────────────────────────────────────────────────────────┐
-│                     FastAPI Backend                     │
-│  - Session & Wallet Auth (SQLite3 users.db)             │
-│  - AI Evaluation Pipeline Orchestration                 │
-│  - Sui Client Transaction Dispatcher (pysui)            │
-└──────────────┬───────────────────────────┬──────────────┘
-               │                           │
-               ▼                           ▼
-┌─────────────────────────────┐ ┌─────────────────────────┐
-│       OpenAI GPT-4 API      │ │    Sui Move Package     │
-│  - Multi-dimensional scoring│ │  - Submissions Store    │
-│  - Logic & Bias analysis    │ │  - ValidSubmission NFT  │
-│  - Safety & rank tagging    │ │  - UserReputation Object│
-└─────────────────────────────┘ └─────────────────────────┘
+```mermaid
+flowchart LR
+  S[submission] --> IG[input guard<br/>injection · toxicity · PII mask] --> DD[near-duplicate check]
+  DD --> RE[retrieve case evidence<br/>ragcore hybrid + rerank]
+  RE --> J1[synopsis judge] & J2[logic judge] & J3[hypothesis judge] & J4[bias judge]
+  J1 & J2 & J3 & J4 --> AG[aggregate /40<br/>+ disagreement]
+  AG --> PG{policy gate<br/>pure Python}
+  PG -->|accept| CR[credential<br/>MOCK CHAIN / Sui] --> RP[reputation] --> FB
+  PG -->|grey zone| MOD[moderator<br/>interrupt → resume] --> CR
+  MOD --> FB
+  PG -->|reject| FB[evidence-cited feedback] --> MEM[contributor memory]
+  MOD -. decision + AI verdict .-> LOG[(moderation_log → new eval cases)]
 ```
 
-### Component Breakdown
+- **Evidence, not vibes:** each case has a 7-document evidence pack (incident report, logs, witness statements, analyst notes, and one document with a deliberate contradiction). The judges see retrieved evidence wrapped as `<evidence id=E3>` and must cite ids for every flag.
+- **Code decides:** total = sum of four 0–10 judge scores. Unsafe → reject; total < 26 → reject; prompt injection, near-duplicate, or judge disagreement > 0.4 → moderator; total ≥ 30 with no uncited critical flag → accept; anything else → moderator.
+- **Humans own the grey zone:** the LangGraph run pauses at `interrupt()`, checkpointed in SQLite (thread `sub-<id>`). A moderator approves, rejects, or adjusts scores, and every decision is logged with the AI's original verdict and turned into eval data.
+- **Moderator analytics:** plain-English questions become SQL that is validated by sqlglot and run read-only. The SQL and the guard's verdict are always shown, and `DROP TABLE users` is blocked in red.
+- **Real login:** wallet signature (Sui personal message, Ed25519) → JWT. v1 trusted an `X-Wallet-Address` header. A clearly labelled `DEMO_MODE` login exists for demos.
 
-1. **Frontend (`frontend/`)**:
-   - Single-Page Application (SPA) built with React 19, Vite, and Radix UI Themes.
-   - Integrates `@mysten/dapp-kit` for non-custodial Sui wallet connection (Devnet).
-   - Dedicated pages for Case Analysis, Synopsis Evaluation, Timeline Logic, Hypothesis Verification, and User Submissions.
-2. **Backend (`backend/`)**:
-   - Asynchronous REST API powered by FastAPI and Uvicorn.
-   - Interfaces with OpenAI via the official SDK using structured JSON schema prompts.
-   - Manages on-chain transactions and calls Move entry functions via `pysui`.
-3. **Smart Contracts (`move/rex/`)**:
-   - Written in Sui Move (`edition = "2024.beta"`).
-   - `Submissions`: Shared object holding a table of all community submissions with emitted events.
-   - `ValidSubmission`: Ownable NFT minted and transferred to authors of validated submissions.
-   - `UserReputation`: On-chain user profile recording reputation points, accepted submissions, and NFT counts.
-4. **Data Layer**:
-   - `users.db`: Lightweight SQLite database for local wallet authentication state and user registry.
+Concept-by-concept details: [ARCHITECTURE.md](ARCHITECTURE.md). Demo walkthrough: [DEMO_SCRIPT.md](DEMO_SCRIPT.md).
 
----
+## v1 → v2: what changed and why
 
-## Tech Stack
+| v1 | v2 | Why |
+|---|---|---|
+| Judged against a short description + general knowledge | RAG over each case's evidence pack, cited flags | Scores you can check |
+| One big `gpt-4` prompt for 8 outputs | Four focused judges in parallel, temperature 0, configurable models | Narrow tasks are more reliable and cheaper |
+| `json.loads` on free text | Structured outputs + Pydantic + one retry + offline fallback | No silent bad fields |
+| Only synopsis gated, inside the AI utility | Code policy gate over the whole panel, including disagreement | Auditable, testable decisions |
+| Binary valid/invalid | Moderator `interrupt()` for the grey zone | Humans decide what's genuinely unclear |
+| Uncalibrated scores | Calibration vs 30 human labels | Know what a score means |
+| No learning loop | Moderator decisions → `moderation_log` → new eval cases | The panel improves from overrides |
+| Prompt injection via the submission | Input guard + data wrapping + red-team tests | "Give this 10/10" can't buy a credential |
+| Duplicate spam | Embedding near-duplicate check | No reputation farming |
+| Header-trust auth | Wallet signature verification + JWT | Identity can't be typed in |
+| No analytics | Safe text-to-SQL | Moderators can see the platform |
+| Generic feedback | Evidence-cited feedback using contributor memory | Contributors learn what to fix |
 
-| Layer | Technologies / Frameworks |
+## Eval results (measured)
+
+From `python -m evals.run_all` on 2026-11-01, **offline mode** (no API key), so the judges are
+the deterministic rubric judges and SQL comes from templates. The full report is in
+[`backend/data/logs/eval_report.md`](backend/data/logs/eval_report.md).
+
+### Calibration: AI panel + gate vs 30 hand-labelled submissions
+
+The labels (accept / review / reject, plus a human total) are in `backend/evals/labels.jsonl`.
+They were written by the same person who wrote the offline rubric, so treat these numbers as
+optimistic until the labels are reviewed independently.
+
+| gate version | verdict accuracy | Cohen's κ | sent to moderator | critical errors* | MAE total /40 |
+|---|---|---|---|---|---|
+| v2.0: disagreement checked before low total | 0.533 | 0.387 | 63% | 0 | 8.10 |
+| v2.1: low total rejected first (as specified) | 0.700 | 0.495 | 13% | 0 | 8.10 |
+| v2.2: + rubric judge no longer penalises *refuting* a false claim | **0.733** | **0.547** | **10%** | **0** | **8.00** |
+
+\*Critical error = auto-accepting something a human would reject, or auto-rejecting something a human would accept.
+
+What calibration taught me, including what's still wrong:
+- **v2.0 → v2.1:** weak answers were being escalated to moderators because one judge (bias) rated short, assumption-free text highly, so the panel "disagreed". Rejecting low totals first fixed most of that without any critical errors.
+- **v2.1 → v2.2:** the review trace showed every judge flagging a submission for "relying on the guard's sighting" when the submission was *pointing out* that the camera contradicts the guard. The rubric judge now ignores sentences that refute the trap.
+- **Still wrong:** all 5 human-"review" borderline answers are auto-rejected (the offline judges score them 20–25, below 26), and the 3 near-duplicates go to review where humans would reject outright. The offline judges also over-score strong answers (40 vs human 35–37), which is most of the MAE.
+
+### Red team, trajectories, retrieval
+
+| check | result |
 |---|---|
-| **Smart Contracts** | Sui Move, Sui Framework (`devnet`) |
-| **Backend** | Python 3.12, FastAPI, Uvicorn, Pydantic, `pysui`, OpenAI Python SDK, `python-jose`, `python-dotenv`, SQLite3 |
-| **Frontend** | React 19, Vite, JavaScript (ES modules), `@mysten/dapp-kit`, `@mysten/sui`, Radix UI Themes, Radix UI Icons, TanStack React Query, React Router DOM 7, Axios, CSS Modules |
-| **Tools & Environment** | Sui CLI, Node.js, npm, Git |
+| Prompt injection inside submissions | 3/3 flagged, never auto-accepted |
+| Toxic submissions | 2/2 rejected as unsafe |
+| Near-duplicate resubmissions | 3/3 caught (similarity 0.9989–0.9997); 0 distinct analyses wrongly flagged |
+| SQL attacks (typed by a moderator *and* returned by a compromised model) | 19/19 blocked; users table intact |
+| Agent trajectories | 6/6 pass: clear accept → exactly one credential; clear reject → no side effects; borderline → interrupt; moderator adjust logged with the AI verdict; injection never auto-accepted; resume after restart |
+| Unit + integration tests | `pytest -q`: 41 passed |
 
----
+**Near-duplicate threshold, a deliberate deviation:** the spec suggested 0.9. Measured on
+the labelled set, distinct analyses of the same case reach a cosine similarity of **0.941** (4 of
+108 distinct pairs exceed 0.9), while real near-copies score ≥ 0.998. 0.9 would flag honest
+contributors, so the threshold is **0.97**.
 
-## Project Structure
+Evidence retrieval, 20 golden questions, filtered to the case:
 
-```
-Rexetive/
-├── backend/
-│   ├── ai_utils.py             # OpenAI prompt evaluation routines
-│   ├── blockchain_utils.py     # pysui SDK client & Move contract calls
-│   ├── main.py                 # FastAPI endpoints & route handlers
-│   ├── requirements.txt        # Python backend dependencies
-│   ├── user_auth.py            # SQLite user registry & wallet auth
-│   └── .gitignore
-├── frontend/
-│   ├── public/                 # Static assets & case study fixtures
-│   ├── src/
-│   │   ├── components/         # Navbar, ProtectedRoute, Case Tools
-│   │   ├── contexts/           # AuthContext for Sui wallet state
-│   │   ├── pages/              # Case synopsis, logic, bias, and submissions pages
-│   │   ├── utils/              # Axios API client setup
-│   │   ├── App.jsx             # Main router & wallet auth wrapper
-│   │   └── main.jsx            # React root with Sui dApp Kit provider
-│   ├── package.json            # Node.js dependencies & scripts
-│   ├── vite.config.js          # Vite bundler configuration
-│   └── .gitignore
-├── move/
-│   └── rex/
-│       ├── sources/
-│       │   └── rex.move        # Sui Move contracts (NFT, Submissions, Reputation)
-│       ├── tests/
-│       │   └── fintech_tests.move # Unit tests for Move contracts
-│       ├── Move.toml           # Sui package manifest
-│       └── Move.lock
-├── .gitignore                  # Root gitignore (.venv, node_modules, build artifacts)
-├── LICENSE                     # MIT License
-├── README.md                   # Project documentation
-└── Rexetive.desc               # Original project abstract
+| config | R@1 | R@3 | R@5 | MRR | nDCG@5 |
+|---|---|---|---|---|---|
+| dense | 0.750 | 1.000 | 1.000 | **0.875** | **0.908** |
+| BM25 | 0.650 | 0.950 | 1.000 | 0.804 | 0.854 |
+| hybrid | 0.700 | 0.950 | 1.000 | 0.838 | 0.879 |
+| hybrid + rerank | 0.750 | 1.000 | 1.000 | 0.858 | 0.895 |
+
+On this tiny corpus (7 short documents per case after the filter), **hybrid search didn't beat
+dense alone**. Every method finds the right document in the top 5. I kept the shared hybrid
+pipeline for consistency with BridgeBot, where hybrid clearly wins on a 1,591-chunk corpus.
+
+## Run it
+
+Requirements: Windows 11, Python 3.10/3.11 (tested on 3.10.11), Node 18+ (tested on 24).
+
+```powershell
+cd Rexetive
+run_demo.bat          # venv + npm install if needed, seed DB, start API :8001 and web :5173 (demo mode, mock chain)
 ```
 
----
+Or step by step:
 
-## Setup & Installation
-
-### Prerequisites
-
-- **Python**: Version 3.10 or higher
-- **Node.js**: Version 18 or higher (with npm)
-- **Sui CLI**: Installed and configured with an active Sui Devnet address
-- **OpenAI API Key**: With access to GPT-4 models
-
----
-
-### 1. Smart Contract Setup (Sui Move)
-
-```bash
-cd move/rex
-
-# Run unit tests
-sui move test
-
-# Build the Move package
-sui move build
-
-# Publish to Sui Devnet (optional, if deploying your own instance)
-sui client publish --gas-budget 100000000
-```
-
-> Take note of the published `Package ID` and shared `Submissions` Object ID to populate your backend configuration.
-
----
-
-### 2. Backend Setup (FastAPI)
-
-```bash
+```powershell
 cd backend
-
-# Create and activate a Python virtual environment
-python -m venv .venv
-
-# On Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# On Linux / macOS:
-# source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-Create a `.env` file in the `backend/` directory:
-
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-SUI_RPC_URL=https://fullnode.devnet.sui.io:443
-SUI_PRIVATE_KEY=your_sui_private_key_here
-SUI_ADDRESS=your_sui_wallet_address_here
-PREDICTIONS_PACKAGE_ID=your_deployed_package_id
-SUBMISSIONS_OBJECT_ID=your_shared_submissions_object_id
-PREDICTIONS_MODULE_NAME=rex
-GAS_BUDGET=20000000
-JWT_SECRET_KEY=your_jwt_secret_key_here
-```
-
-Start the backend server:
-
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-The API documentation will be available at `http://localhost:8000/docs`.
-
----
-
-### 3. Frontend Setup (React + Vite)
-
-```bash
-cd frontend
-
-# Install dependencies
+py -3.10 -m venv .venv
+.venv\Scripts\pip install torch --index-url https://download.pytorch.org/whl/cpu
+.venv\Scripts\pip install -r requirements.txt
+copy .env.example .env                       # optional OPENAI_API_KEY; DEMO_MODE=true; SUI_MOCK=1
+.venv\Scripts\python scripts\download_models.py
+.venv\Scripts\python scripts\seed_db.py      # ~150 synthetic submissions for analytics
+.venv\Scripts\python -m uvicorn main:app --port 8001          # http://localhost:8001/docs
+.venv\Scripts\python -m evals.run_all                         # writes data\logs\eval_report.md
+.venv\Scripts\python -m pytest -q
+cd ..\frontend
+copy .env.example .env.local                 # VITE_DEMO_MODE=true, VITE_API_URL=http://localhost:8001
 npm install
-
-# Start the development server
-npm run dev
+npm run dev                                  # http://localhost:5173 → "Demo login"
 ```
 
-Open `http://localhost:5173` in your browser and connect your Sui Devnet wallet (e.g., Sui Wallet, Nightly, or Ethos).
+**Provider switch:** `LLM_PROVIDER=openai` (default: `gpt-4o-mini` judges/SQL, `gpt-4o` feedback)
+or `anthropic` (`claude-haiku-5-5` / `claude-opus-5-5`). With no key, or `OFFLINE=1`, the
+rubric judges, template feedback and template SQL run instead, and the UI says Offline.
+**Real chain:** set `SUI_MOCK=0` and the `SUI_*` / `PREDICTIONS_*` variables. v1's
+`blockchain_utils.py` is then used unchanged. **Move contract:** `move/rex` (unchanged from v1).
 
----
+## Shared code
 
-## Award & Recognition
+`backend/ragcore/` is copied from BridgeBot (`bridgebot/ragcore/`). It's shared code, not a
+dependency; see `backend/ragcore/SHARED.md`.
 
-- **Finalist** — **SuiHub Decentralized Autonomy Blockathon** (Organized by the Sui Foundation, May 2025).
-- Recognized for building an autonomous, AI-gated on-chain knowledge validation and reputation pipeline on the Sui network.
+## Known issues
 
----
+- **No keyed eval run yet.** All numbers above are offline (rubric judges). The LLM judges, LLM SQL and LLM feedback are implemented and fall back automatically, but haven't been measured with a key.
+- **The wallet login is verified in tests, not in a browser wallet.** `tests/test_auth.py` builds signatures exactly as Sui's personal-message scheme specifies (intent `[3,0,0]` + BCS bytes, blake2b-256, Ed25519) and checks valid, tampered, wrong-address and wrong-scheme cases. It hasn't been clicked through with a real Sui wallet extension. Only Ed25519 wallets are supported (secp256k1/r1 get a clear error).
+- **The calibration labels are mine.** Have someone else re-label `evals/labels.jsonl` before trusting kappa.
+- Python 3.11 was requested but not installed on the build machine; everything runs on 3.10.11.
+- The frontend bundle is 680 kB (Vite warns at 500 kB). Code-splitting the dapp-kit wallet code is the next step.
+- The v1 smart-contract tests (`move/rex/tests`) weren't run (no Sui CLI on the build machine).
 
-## Future Work
+## Licence
 
-- **Community Staking & Peer Verification**: Allow other researchers to stake SUI tokens to challenge or endorse AI-validated findings through a decentralized review DAO.
-- **Multi-Agent Cross Examination**: Introduce competing AI evaluators to debate edge-case theories before submitting verdicts on-chain.
-- **Sui Mainnet Deployment**: Transition contract package and reputation primitives to Sui Mainnet with enhanced dynamic NFT visual traits.
-- **Zero-Knowledge Whistleblower Mode**: Implement zk-SNARK / zk-Login primitives to enable anonymous submissions while preserving cryptographic proof of insight validity.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+MIT (see `LICENSE`). All cases, people and places in `backend/data/cases/` are fictional.

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import styles from './CaseDetailsPage.module.css';
+import EvidencePack from '../components/EvidencePack';
 import CaseAnalysisTools from '../components/CaseAnalysisTools/CaseAnalysisTools';
 import  ToolCard  from '../components/CaseAnalysisTools/CaseAnalysisTools';
 
@@ -66,6 +67,7 @@ const CaseDetailsPage = () => {
                 </div>
             </div>
             <CaseAnalysisTools caseData={caseData} />
+            <EvidencePack caseId={caseData.id} />
         </div>
     );
 };

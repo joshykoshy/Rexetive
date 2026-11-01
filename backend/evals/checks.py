@@ -62,11 +62,11 @@ def trajectories() -> list[dict]:
         record("clear_reject_no_side_effects", st["decision"]["verdict"] == "reject" and not creds,
                f"verdict={st['decision']['verdict']} creds={len(creds)}")
 
-        sid = submit(L["L02"]["text"], 1, "logic")  # scores 29: borderline under the offline judges
+        sid = submit(BORDERLINE, 1, "logic")  # a grey-zone answer: spots the clone, names no suspect
         run = start_review(sid, graph=g)
         record("borderline_interrupts", run["status"] == "needs_review" and run["interrupt"] is not None,
                f"status={run['status']} reasons={run['state']['decision']['reasons']}")
-        done = resume_review(sid, "adjust", scores={"logic": 10}, note="timeline is excellent", graph=g)
+        done = resume_review(sid, "adjust", scores={"synopsis": 6}, note="clone finding is solid", graph=g)
         log = db.query("SELECT * FROM moderation_log WHERE submission_id=?", (sid,))
         record("moderator_adjust_logged_with_ai_verdict", len(log) == 1 and log[0]["ai_verdict"].startswith("review")
                and log[0]["ai_total"] == run["state"]["aggregate"]["total"] and done["status"] == "accepted",
@@ -84,6 +84,8 @@ def trajectories() -> list[dict]:
     return results
 
 
+BORDERLINE = ("Someone cloned the conservator badge: the reader logged a different card at 21:42 [E2, E4] while she was "
+              "at the restaurant [E5]. The alarm was off for maintenance [E3]. I am not sure who did it.")
 C1_GOOD_TAIL = ("Pell requested the evening alarm maintenance [E3], raised the insurance [E6], and a cloned badge [E4] was used "
                 "at 21:42 [E2] while Varga paid at the restaurant (receipt) [E5]; the corridor camera contradicts the guard [E7].")
 
