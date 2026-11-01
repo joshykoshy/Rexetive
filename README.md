@@ -134,7 +134,7 @@ npm run dev                                  # http://localhost:5173 → "Demo l
 ```
 
 **Provider switch:** `LLM_PROVIDER=openai` (default: `gpt-4o-mini` judges/SQL, `gpt-4o` feedback)
-or `anthropic` (`claude-haiku-5-5` / `claude-opus-5-5`). With no key, or `OFFLINE=1`, the
+or `anthropic` (`claude-haiku-5-5` / `claude-opus-5-5`), or `gemini` (`GEMINI_API_KEY`, default `gemini-3.8-flash`, via Google's OpenAI-compatible endpoint). With no key, or `OFFLINE=1`, the
 rubric judges, template feedback and template SQL run instead, and the UI says Offline.
 **Real chain:** set `SUI_MOCK=0` and the `SUI_*` / `PREDICTIONS_*` variables. v1's
 `blockchain_utils.py` is then used unchanged. **Move contract:** `move/rex` (unchanged from v1).
